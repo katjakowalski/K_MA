@@ -25,10 +25,11 @@ os.chdir("\\\\141.20.140.91\SAN_Projects\Spring\workspace\Katja\germany")
 # get driver
 mem_driver = ogr.GetDriverByName('Memory')
 shp_driver = ogr.GetDriverByName("ESRI Shapefile")
+
 undist_forest = gdal.Open(root_folder + "/germany_landcover_2015_g1416lc3_dbf_undisturbed_erode3x3_mmu11.bsq")
 gt_for = undist_forest.GetGeoTransform()
 
-station_shp = shp_driver.Open(root_folder + '/dwd/stat_dwd_5km_200px.shp', 1)
+station_shp = shp_driver.Open(root_folder + '/dwd/stat_dwd_5km_250px.shp', 1)
 station = station_shp.GetLayer()
 
 # corner coordinates of forest raster
@@ -37,15 +38,15 @@ x_max = x_min + gt_for[1] * undist_forest.RasterXSize
 y_min = y_max + gt_for[5] * undist_forest.RasterYSize
 
 # setup shapefile for samples
-#data_source_s = shp_driver.CreateDataSource('samples.shp')
-#srs_s = osr.SpatialReference()
-#srs_s.ImportFromEPSG(3035)
-#layer_s = data_source_s.CreateLayer("samples", srs_s, ogr.wkbPoint)
-#field0 = ogr.FieldDefn("ID", ogr.OFTInteger)
-#field1 = ogr.FieldDefn('ID_sample', ogr.OFTInteger)
-#layer_s.CreateField(field0)
-#layer_s.CreateField(field1)
-#defn_s = layer_s.GetLayerDefn()
+data_source_s = shp_driver.CreateDataSource('samples.shp')
+srs_s = osr.SpatialReference()
+srs_s.ImportFromEPSG(3035)
+layer_s = data_source_s.CreateLayer("samples", srs_s, ogr.wkbPoint)
+field0 = ogr.FieldDefn("ID", ogr.OFTInteger)
+field1 = ogr.FieldDefn('ID_s', ogr.OFTInteger)
+layer_s.CreateField(field0)
+layer_s.CreateField(field1)
+defn_s = layer_s.GetLayerDefn()
 
 
 # create buffer shapefile in Memory
@@ -73,13 +74,16 @@ final_sample = []
 b_feat = layer.GetNextFeature()
 x_sample = []
 y_sample = []
+nr = 0
 while b_feat:
     samples = []
     geom_b = b_feat.GetGeometryRef()
     x_min_b, x_max_b, y_min_b, y_max_b = b_feat.geometry().GetEnvelope()  # get extent of buffer
     ID = b_feat.GetField('ID')
     print(ID)
+    nr += 1
     c = 0
+    print(nr)
     while len(samples) < 30:
         x_s = rd.uniform(x_min_b, x_max_b)
         y_s = rd.uniform(y_min_b, y_max_b)
@@ -108,12 +112,13 @@ while b_feat:
                             y_sample.append(y_s)
                             samples.append(1)
                             # shapefile:
-                            #pt = ogr.Geometry(ogr.wkbPoint)
-                            #pt.AddPoint(x_s, y_s)
-                            #feat = ogr.Feature(defn_s)
-                            #feat.SetGeometry(pt)
-                            #feat.SetField('ID', ID)
-                            #layer_s.CreateFeature(feat)
+                            pt = ogr.Geometry(ogr.wkbPoint)
+                            pt.AddPoint(x_s, y_s)
+                            feat = ogr.Feature(defn_s)
+                            feat.SetGeometry(pt)
+                            feat.SetField('ID', ID)
+                            feat.SetField('ID_s', c)
+                            layer_s.CreateFeature(feat)
                             print('sample:', c)
                     feat = None
     b_feat = layer.GetNextFeature()
