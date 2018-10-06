@@ -29,7 +29,7 @@ shp_driver = ogr.GetDriverByName("ESRI Shapefile")
 undist_forest = gdal.Open(root_folder + "/germany_landcover_2015_g1416lc3_dbf_undisturbed_erode3x3_mmu11.bsq")
 gt_for = undist_forest.GetGeoTransform()
 
-station_shp = shp_driver.Open(root_folder + '/dwd/stat_dwd_5km_250px.shp', 1)
+station_shp = shp_driver.Open(root_folder + '/dwd/stat_dwd_5km_300px.shp', 1)
 station = station_shp.GetLayer()
 
 # corner coordinates of forest raster
