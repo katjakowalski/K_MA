@@ -27,7 +27,7 @@ mem_driver = ogr.GetDriverByName('Memory')
 shp_driver = ogr.GetDriverByName("ESRI Shapefile")
 
 # open shapefiles: tiles and stations
-sample_shp = shp_driver.Open(root_folder + '/sample_test.shp', 1)
+sample_shp = shp_driver.Open(root_folder + '/samples.shp', 1)
 sample = sample_shp.GetLayer()
 tiles_shp = shp_driver.Open(root_folder + "/germany.shp", 1)
 tiles = tiles_shp.GetLayer()
@@ -40,7 +40,6 @@ while tile_feat:
     direct = os.path.join(data_path, name)
     tile_list.append(direct)
     tile_feat = tiles.GetNextFeature()
-print(tile_list)
 tiles.ResetReading()
 
 
@@ -48,21 +47,22 @@ date_list = list(range(20160815, 20180815))
 date_list = [str(item) for item in date_list]
 
 endlist = ['QAI', 'BOA']
+
 csv_list = []
-c= 0
+c = 0
 sample_feat = sample.GetNextFeature()
 while sample_feat:
     xtra_list = []
-    c+=1
+    c += 1
     print(c)
     sample_geom = sample_feat.GetGeometryRef()
-    x,y = sample_geom.GetX(), sample_geom.GetY()
+    x, y = sample_geom.GetX(), sample_geom.GetY()
     ID_dwd = sample_feat.GetField('ID')
     ID_s = sample_feat.GetField('ID_s')
     xtra_list.append(ID_dwd)
     xtra_list.append(ID_s)
     tile_feat2 = tiles.GetNextFeature()
-    while tile_feat2:                               # loop through all tiles
+    while tile_feat2:  # loop through all tiles
         t_id = tile_feat2.GetField('Name')
         geom_t = tile_feat2.GetGeometryRef()
         if geom_t.Contains(sample_geom):
@@ -77,16 +77,15 @@ while sample_feat:
                                         file_list.append(os.path.join(root, name))
         tile_feat2 = tiles.GetNextFeature()
     tiles.ResetReading()
-    #print('files:', len(file_list))
-    print(xtra_list)
-    data_list = return_raster_values(x,y, file_list, xtra_list)
+    print('files:', len(file_list))
+    data_list = return_raster_values(x, y, file_list, xtra_list)
     csv_list.extend(data_list)
-
     sample_feat = sample.GetNextFeature()
 sample.ResetReading()
+
 cols = list(('dwd_ID', 'ID_sample','X', 'Y', 'tile_id', 'date', 'img_type','sensor', 'band','value'))
 df_pandas = pd.DataFrame.from_records(csv_list, columns=cols )
-df_pandas.to_csv(path_or_buf= 'samples_test.csv', index=False, sep=';')
+df_pandas.to_csv(path_or_buf= 'samples.csv', index=False, sep=';')
 
 
 #####################################################################################
