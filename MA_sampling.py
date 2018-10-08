@@ -13,6 +13,7 @@ import numpy as np
 import os
 import glob
 import random as rd
+from random import randint
 import shapely
 import struct
 from Tools import return_raster_values
@@ -20,6 +21,7 @@ from Tools import return_raster_values
 #####################################################################################
 root_folder = "\\\\141.20.140.91\SAN_Projects\Spring\workspace\Katja\germany"
 data_path = "\\\\141.20.140.222\Dagobah\edc\level2"
+save_folder = "\\\\141.20.140.91\SAN_Projects\Spring\workspace\Katja\germany\sample_split/"
 os.chdir("\\\\141.20.140.91\SAN_Projects\Spring\workspace\Katja\germany")
 
 # get driver
@@ -29,8 +31,11 @@ shp_driver = ogr.GetDriverByName("ESRI Shapefile")
 undist_forest = gdal.Open(root_folder + "/germany_landcover_2015_g1416lc3_dbf_undisturbed_erode3x3_mmu11.bsq")
 gt_for = undist_forest.GetGeoTransform()
 
+# open shapes
 station_shp = shp_driver.Open(root_folder + '/dwd/stat_dwd_5km_300px.shp', 1)
 station = station_shp.GetLayer()
+tiles_shp = shp_driver.Open(root_folder + "/germany.shp", 1)
+tiles = tiles_shp.GetLayer()
 
 # corner coordinates of forest raster
 x_min, y_max = gt_for[0], gt_for[3]
@@ -44,8 +49,10 @@ srs_s.ImportFromEPSG(3035)
 layer_s = data_source_s.CreateLayer("samples", srs_s, ogr.wkbPoint)
 field0 = ogr.FieldDefn("ID", ogr.OFTInteger)
 field1 = ogr.FieldDefn('ID_s', ogr.OFTInteger)
+field2 = ogr.FieldDefn('ID_sp', ogr.OFTInteger)
 layer_s.CreateField(field0)
 layer_s.CreateField(field1)
+layer_s.CreateField(field2)
 defn_s = layer_s.GetLayerDefn()
 
 
@@ -75,6 +82,7 @@ b_feat = layer.GetNextFeature()
 x_sample = []
 y_sample = []
 nr = 0
+split_c = 0
 while b_feat:
     samples = []
     geom_b = b_feat.GetGeometryRef()
@@ -118,6 +126,12 @@ while b_feat:
                             feat.SetGeometry(pt)
                             feat.SetField('ID', ID)
                             feat.SetField('ID_s', c)
+                            split_c += 1
+                            if split_c <= 16:
+                                feat.SetField('ID_sp', split_c)
+                            else:
+                                feat.SetField('ID_sp', 1)
+                                split_c = 1
                             layer_s.CreateFeature(feat)
                             print('sample:', c)
                     feat = None
@@ -126,6 +140,19 @@ layer.ResetReading()
 
 np.savetxt("samples.csv", sample_list, delimiter=",", fmt='%s')
 
+
+# split samples in 8 parts
+#
+# for i in list(range(1,17)):
+#     inds = ogr.Open('samples.shp')
+#     inlyr=inds.GetLayer()
+#     inlyr.SetAttributeFilter("ID_sp = '"+ str(i) + "'")
+#     drv = ogr.GetDriverByName( 'ESRI Shapefile' )
+#     outds = drv.CreateDataSource(save_folder + "sample_"+ str(i) +".shp" )
+#     outlyr = outds.CopyLayer(inlyr,"sample_"+ str(i))
+#     del inlyr,inds,outlyr,outds
+# print("done")
+#
 
 
 #####################################################################################

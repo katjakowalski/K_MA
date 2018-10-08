@@ -21,13 +21,14 @@ from Tools import return_raster_values
 root_folder = "\\\\141.20.140.91\SAN_Projects\Spring\workspace\Katja\germany"
 data_path = "\\\\141.20.140.222\Dagobah\edc\level2"
 os.chdir("\\\\141.20.140.91\SAN_Projects\Spring\workspace\Katja\germany/")
+save_folder = "\\\\141.20.140.91\SAN_Projects\Spring\workspace\Katja\germany\sample_split/"
 
 # get driver
 mem_driver = ogr.GetDriverByName('Memory')
 shp_driver = ogr.GetDriverByName("ESRI Shapefile")
 
 # open shapefiles: tiles and stations
-sample_shp = shp_driver.Open(root_folder + '/samples.shp', 1)
+sample_shp = shp_driver.Open(save_folder + '/sample_1.shp', 1)
 sample = sample_shp.GetLayer()
 tiles_shp = shp_driver.Open(root_folder + "/germany.shp", 1)
 tiles = tiles_shp.GetLayer()
