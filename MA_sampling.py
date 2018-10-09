@@ -32,7 +32,7 @@ undist_forest = gdal.Open(root_folder + "/germany_landcover_2015_g1416lc3_dbf_un
 gt_for = undist_forest.GetGeoTransform()
 
 # open shapes
-station_shp = shp_driver.Open(root_folder + '/dwd/stat_dwd_5km_300px.shp', 1)
+station_shp = shp_driver.Open(root_folder + '/dwd/stat_dwd_5km_300px_akt.shp', 1)
 station = station_shp.GetLayer()
 tiles_shp = shp_driver.Open(root_folder + "/germany.shp", 1)
 tiles = tiles_shp.GetLayer()
@@ -43,10 +43,10 @@ x_max = x_min + gt_for[1] * undist_forest.RasterXSize
 y_min = y_max + gt_for[5] * undist_forest.RasterYSize
 
 # setup shapefile for samples
-data_source_s = shp_driver.CreateDataSource('samples.shp')
+data_source_s = shp_driver.CreateDataSource('samples20181009.shp')
 srs_s = osr.SpatialReference()
 srs_s.ImportFromEPSG(3035)
-layer_s = data_source_s.CreateLayer("samples", srs_s, ogr.wkbPoint)
+layer_s = data_source_s.CreateLayer("samples20181009", srs_s, ogr.wkbPoint)
 field0 = ogr.FieldDefn("ID", ogr.OFTInteger)
 field1 = ogr.FieldDefn('ID_s', ogr.OFTInteger)
 field2 = ogr.FieldDefn('ID_sp', ogr.OFTInteger)
